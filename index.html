@@ -1,0 +1,1885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resume Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+/* colors */
+:root{
+  --bg:#eef1f6;
+  --card:#fff;
+  --card2:#fbfcfe;
+  --line:#dde3ec;
+  --line2:#e5e9f0;
+  --text:#1f2937;
+  --muted:#64748b;
+  --muted2:#94a3b8;
+  --inbg:#fff;
+  --inline:#d7dee9;
+  --hover:#f1f5f9;
+  --blue:#2563eb;
+  --topbar:#fff;
+  --pv:#e5e9f0;
+}
+
+/* dark mode colors */
+body.dark{
+  --bg:#0f172a;
+  --card:#1e293b;
+  --card2:#1a2436;
+  --line:#334155;
+  --line2:#334155;
+  --text:#e2e8f0;
+  --muted:#94a3b8;
+  --muted2:#64748b;
+  --inbg:#0f172a;
+  --inline:#334155;
+  --hover:#334155;
+  --topbar:#1e293b;
+  --pv:#0b1220;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;height:100vh;display:flex;flex-direction:column;overflow:hidden;
+  font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+  font-size:14px;color:var(--text);background:var(--bg);
+  transition:background .2s,color .2s;
+}
+
+/* top bar */
+.topbar{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:8px 14px;background:var(--topbar);border-bottom:1px solid var(--line);
+  z-index:50;
+}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;color:var(--text);white-space:nowrap}
+.brand .dot{width:22px;height:22px;border-radius:7px;background:linear-gradient(135deg,#2563eb,#7c3aed)}
+.actions{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+
+/* buttons */
+.btn{
+  border:1px solid var(--line);background:var(--card);color:var(--text);
+  border-radius:8px;padding:7px 11px;font:inherit;font-size:12.5px;font-weight:600;
+  cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.12s;white-space:nowrap;
+}
+.btn:hover{background:var(--hover)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.primary:hover{background:#1d4ed8}
+.btn.icon{padding:7px 10px;font-size:15px;line-height:1}
+
+/* mobile edit / preview buttons */
+.mobilebar{display:none;background:var(--card);border-bottom:1px solid var(--line);padding:6px;gap:6px}
+.mobilebar button{
+  flex:1;padding:9px;border:0;border-radius:7px;background:transparent;
+  color:var(--muted);font:inherit;font-weight:600;font-size:13px;cursor:pointer;
+}
+.mobilebar button.on{background:var(--blue);color:#fff}
+
+/* layout */
+.app{flex:1;min-height:0;display:flex}
+
+/* left editor */
+.editor{
+  width:400px;min-width:340px;flex:none;background:var(--card);
+  border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;
+}
+.tabs{display:flex;border-bottom:1px solid var(--line2);flex:none}
+.tab{
+  flex:1;padding:12px 8px;border:0;background:none;cursor:pointer;font:inherit;
+  font-size:12.5px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;
+}
+.tab:hover{color:var(--text);background:var(--card2)}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue);background:var(--card2)}
+
+.panel{display:none;overflow-y:auto;padding:14px;flex:1;min-height:0;background:var(--card2)}
+.panel.active{display:block}
+.panel::-webkit-scrollbar{width:10px}
+.panel::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px;border:3px solid var(--card2)}
+
+/* blocks */
+.block{border:1px solid var(--line2);border-radius:11px;margin-bottom:12px;background:var(--card);overflow:hidden}
+.block.is-hidden{opacity:.55}
+.block-head{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--card2);border-bottom:1px solid var(--line2)}
+.block-head h3{margin:0;font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);flex:1}
+.block-tools{display:flex;gap:4px}
+.block-body{padding:10px}
+
+.mini{
+  border:1px solid var(--line);background:var(--card);border-radius:6px;width:24px;height:24px;
+  font-size:11px;line-height:1;cursor:pointer;color:var(--muted);
+  display:inline-flex;align-items:center;justify-content:center;padding:0;
+}
+.mini:hover{background:var(--hover)}
+.mini:disabled{opacity:.3;cursor:default}
+.mini.danger{color:#dc2626;border-color:#fecaca}
+.mini.danger:hover{background:#fef2f2}
+.mini.on{background:#e0e7ff;border-color:#c7d2fe;color:#4338ca}
+
+.card{border:1px solid var(--line2);border-radius:9px;padding:9px;margin-bottom:8px;background:var(--card2)}
+.card:last-child{margin-bottom:0}
+.card-head{display:flex;align-items:center;gap:6px;margin-bottom:7px}
+.card-title{flex:1;font-size:12px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* form fields */
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:0 8px}
+.field{display:block;grid-column:span 2;margin-bottom:9px}
+.field.half{grid-column:span 1}
+.field>span{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:3px}
+input[type=text],input[type=number],select,textarea{
+  width:100%;padding:7px 9px;border:1px solid var(--inline);border-radius:8px;
+  font:inherit;font-size:13px;color:var(--text);background:var(--inbg);outline:none;transition:.12s;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.13)}
+textarea{resize:vertical;min-height:58px;line-height:1.5;font-size:12.5px}
+select{cursor:pointer;appearance:none;padding-right:26px;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' fill='none' stroke='%2364748b' stroke-width='1.6' stroke-linecap='round'/></svg>");
+  background-repeat:no-repeat;background-position:right 9px center;
+}
+.field.checkbox{display:flex;align-items:center;gap:7px;padding-top:18px}
+.field.checkbox input{width:15px;height:15px;accent-color:var(--blue);cursor:pointer}
+.field.checkbox span{margin:0;font-size:12px;color:var(--text);font-weight:600}
+
+.color-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.color-field{display:flex;align-items:center;gap:7px;border:1px solid var(--line2);border-radius:8px;padding:5px 7px;background:var(--card)}
+.color-field input[type=color]{width:26px;height:26px;border:0;padding:0;background:none;cursor:pointer;border-radius:6px;flex:none}
+.color-field input[type=color]::-webkit-color-swatch{border:1px solid var(--line);border-radius:6px}
+.color-field span{font-size:11px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.hint{font-size:11.5px;color:var(--muted2);line-height:1.5;margin:0 0 10px}
+.subhead{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted2);margin:16px 2px 8px}
+
+/* right preview */
+.preview{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--pv)}
+.preview-toolbar{
+  height:42px;display:flex;align-items:center;gap:12px;padding:0 16px;
+  background:var(--card2);border-bottom:1px solid var(--line);font-size:12px;color:var(--muted);flex:none;
+}
+.preview-toolbar .pill{background:var(--hover);border-radius:999px;padding:3px 10px;font-weight:600}
+.preview-scroll{flex:1;min-height:0;overflow:auto;padding:26px;background:var(--pv)}
+.scaler{margin:0 auto;background:#fff;overflow:hidden;border-radius:2px;box-shadow:0 10px 34px rgba(0,0,0,.2)}
+
+/* toast popup */
+#toast{
+  position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);
+  background:#0f172a;color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;
+  opacity:0;pointer-events:none;transition:.25s;z-index:999;
+}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* mobile layout */
+@media (max-width:900px){
+  .topbar{padding:7px 10px;gap:6px}
+  .brand{font-size:14px}
+  .brand span:last-child{display:none}
+  .actions{gap:5px}
+  .btn{padding:6px 9px;font-size:12px}
+  .actions .lbl{display:none}
+
+  .mobilebar{display:flex}
+
+  .editor{width:100%;min-width:0;border-right:0;display:none}
+  .preview{display:none}
+
+  .app.show-edit .editor{display:flex;flex:1;min-height:0}
+  .app.show-preview .preview{display:flex;flex:1;min-height:0}
+
+  .preview-scroll{padding:14px}
+  .preview-toolbar{font-size:11px;padding:0 10px;gap:8px}
+  .preview-toolbar span:last-child{display:none}
+
+  .fields{grid-template-columns:1fr}
+  .field.half{grid-column:span 1}
+  .color-grid{grid-template-columns:1fr 1fr}
+}
+
+/* print */
+@media print{
+  html,body{height:auto!important;overflow:visible!important;background:#fff!important;margin:0!important;padding:0!important;display:block!important}
+  .topbar,.editor,.preview-toolbar,.mobilebar,#toast{display:none!important}
+  .app{display:block!important;height:auto!important}
+  .preview{display:block!important;height:auto!important;background:#fff!important}
+  .preview-scroll{display:block!important;overflow:visible!important;padding:0!important;background:#fff!important}
+  .scaler{width:auto!important;height:auto!important;overflow:visible!important;box-shadow:none!important;border-radius:0!important;margin:0!important;background:none!important}
+}
+</style>
+
+<style id="paperStyles"></style>
+</head>
+
+<body>
+
+<header class="topbar">
+  <div class="brand"><span class="dot"></span><span>Resume Builder</span></div>
+  <div class="actions">
+    <button class="btn" id="sampleBtn">✨ <span class="lbl">Sample</span></button>
+    <button class="btn" id="saveBtn">💾 <span class="lbl">Save</span></button>
+    <button class="btn" id="loadBtn">📂 <span class="lbl">Load</span></button>
+    <button class="btn" id="importBtn">⬆ <span class="lbl">Import</span></button>
+    <button class="btn" id="jsonBtn">⬇ <span class="lbl">JSON</span></button>
+    <button class="btn primary" id="pdfBtn">📄 <span class="lbl">PDF</span></button>
+    <button class="btn" id="htmlBtn">⬇ <span class="lbl">HTML</span></button>
+    <button class="btn" id="docxBtn">⬇ <span class="lbl">DOCX</span></button>
+    <button class="btn" id="mdBtn">⬇ <span class="lbl">MD</span></button>
+    <button class="btn" id="printBtn">🖨 <span class="lbl">Print</span></button>
+    <button class="btn icon" id="darkBtn" title="Toggle dark mode">🌙</button>
+  </div>
+</header>
+
+<div class="mobilebar">
+  <button id="showEdit" class="on">✏️ Edit</button>
+  <button id="showPreview">👁️ Preview</button>
+</div>
+
+<main class="app show-edit" id="app">
+
+  <aside class="editor" id="editor">
+    <div class="tabs">
+      <button class="tab active" data-tab="content">Content</button>
+      <button class="tab" data-tab="design">Design</button>
+      <button class="tab" data-tab="advanced">Advanced</button>
+    </div>
+
+    <div class="panel active" id="contentPanel"></div>
+
+    <div class="panel" id="designPanel">
+      <div class="subhead">Template &amp; Layout</div>
+      <div class="block"><div class="block-body">
+        <div class="fields">
+          <label class="field half"><span>Template</span>
+            <select data-path="design.template">
+              <option value="classic">Classic</option>
+              <option value="modern">Modern</option>
+              <option value="minimal">Minimal</option>
+              <option value="elegant">Elegant</option>
+            </select>
+          </label>
+          <label class="field half"><span>Layout</span>
+            <select data-path="design.layout">
+              <option value="one">One column</option>
+              <option value="sidebar-left">Sidebar left</option>
+              <option value="sidebar-right">Sidebar right</option>
+            </select>
+          </label>
+        </div>
+      </div></div>
+
+      <div class="subhead">Page Setup</div>
+      <div class="block"><div class="block-body">
+        <div class="fields">
+          <label class="field half"><span>Page size</span>
+            <select data-path="design.pageSize">
+              <option value="A4">A4</option>
+              <option value="Letter">Letter</option>
+              <option value="Legal">Legal</option>
+            </select>
+          </label>
+          <label class="field half"><span>Orientation</span>
+            <select data-path="design.orientation">
+              <option value="portrait">Portrait</option>
+              <option value="landscape">Landscape</option>
+            </select>
+          </label>
+          <label class="field half"><span>Margin top (mm)</span><input type="number" min="0" max="60" data-path="design.marginTop"></label>
+          <label class="field half"><span>Margin right (mm)</span><input type="number" min="0" max="60" data-path="design.marginRight"></label>
+          <label class="field half"><span>Margin bottom (mm)</span><input type="number" min="0" max="60" data-path="design.marginBottom"></label>
+          <label class="field half"><span>Margin left (mm)</span><input type="number" min="0" max="60" data-path="design.marginLeft"></label>
+        </div>
+      </div></div>
+
+      <div class="subhead">Text Style</div>
+      <div class="block"><div class="block-body">
+        <div class="fields">
+          <label class="field"><span>Font family</span>
+            <select data-path="design.fontFamily">
+              <option value="Inter, Arial, sans-serif">Inter</option>
+              <option value="Arial, Helvetica, sans-serif">Arial</option>
+              <option value="Calibri, Candara, 'Segoe UI', sans-serif">Calibri</option>
+              <option value="'Times New Roman', Times, serif">Times New Roman</option>
+              <option value="Georgia, 'Times New Roman', serif">Georgia</option>
+              <option value="Roboto, Arial, sans-serif">Roboto</option>
+              <option value="Verdana, Geneva, sans-serif">Verdana</option>
+              <option value="'Courier New', Courier, monospace">Courier New</option>
+            </select>
+          </label>
+          <label class="field half"><span>Body size (pt)</span><input type="number" min="7" max="20" step="0.5" data-path="design.fontSize"></label>
+          <label class="field half"><span>Name size (pt)</span><input type="number" min="14" max="48" data-path="design.nameSize"></label>
+          <label class="field half"><span>Line height</span><input type="number" min="1" max="2.4" step="0.05" data-path="design.lineHeight"></label>
+          <label class="field half"><span>Section gap (pt)</span><input type="number" min="2" max="40" data-path="design.sectionGap"></label>
+          <label class="field half"><span>Title size (em)</span><input type="number" min="0.7" max="1.8" step="0.05" data-path="design.titleScale"></label>
+          <label class="field half checkbox"><input type="checkbox" data-path="design.uppercaseTitles"><span>Uppercase titles</span></label>
+        </div>
+      </div></div>
+
+      <div class="subhead">Colors</div>
+      <div class="block"><div class="block-body">
+        <div class="color-grid">
+          <label class="color-field"><input type="color" data-path="design.accent"><span>Accent</span></label>
+          <label class="color-field"><input type="color" data-path="design.headingColor"><span>Headings</span></label>
+          <label class="color-field"><input type="color" data-path="design.textColor"><span>Body text</span></label>
+          <label class="color-field"><input type="color" data-path="design.bgColor"><span>Background</span></label>
+          <label class="color-field"><input type="color" data-path="design.linkColor"><span>Links</span></label>
+          <label class="color-field"><input type="color" data-path="design.sectionTitleColor"><span>Section titles</span></label>
+          <label class="color-field"><input type="color" data-path="design.dividerColor"><span>Dividers</span></label>
+          <label class="color-field"><input type="color" data-path="design.sidebarBg"><span>Sidebar bg</span></label>
+        </div>
+      </div></div>
+
+      <div class="subhead">Divider Line</div>
+      <div class="block"><div class="block-body">
+        <div class="fields">
+          <label class="field half"><span>Style</span>
+            <select data-path="design.dividerStyle">
+              <option value="solid">Solid</option>
+              <option value="dashed">Dashed</option>
+              <option value="dotted">Dotted</option>
+              <option value="none">None</option>
+            </select>
+          </label>
+          <label class="field half"><span>Thickness (px)</span><input type="number" min="0" max="6" data-path="design.dividerWidth"></label>
+        </div>
+      </div></div>
+
+      <div class="subhead">Header &amp; Photo</div>
+      <div class="block"><div class="block-body">
+        <div class="fields">
+          <label class="field half"><span>Name alignment</span>
+            <select data-path="design.headAlign">
+              <option value="left">Left</option>
+              <option value="center">Center</option>
+              <option value="right">Right</option>
+            </select>
+          </label>
+          <label class="field half checkbox"><input type="checkbox" data-path="design.showPhoto"><span>Show photo</span></label>
+          <label class="field half"><span>Photo shape</span>
+            <select data-path="design.photoShape">
+              <option value="circle">Circle</option>
+              <option value="rounded">Rounded</option>
+              <option value="square">Square</option>
+            </select>
+          </label>
+          <label class="field half"><span>Photo size (px)</span><input type="number" min="40" max="180" step="4" data-path="design.photoSize"></label>
+        </div>
+      </div></div>
+
+      <div class="subhead">Footer</div>
+      <div class="block"><div class="block-body">
+        <div class="fields">
+          <label class="field checkbox"><input type="checkbox" data-path="design.showFooter"><span>Show footer</span></label>
+          <label class="field"><span>Footer text</span><input type="text" data-path="design.footerText" placeholder="e.g. References available"></label>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="panel" id="advancedPanel">
+      <p class="hint">Everything stays in your browser. Nothing gets uploaded. Use Save to keep a copy, and Import JSON to move to another device.</p>
+
+      <div class="block">
+        <div class="block-head"><h3>Quick tools</h3></div>
+        <div class="block-body">
+          <button class="btn" style="width:100%;justify-content:center;margin-bottom:8px" id="copyJson">📋 Copy JSON</button>
+          <button class="btn" style="width:100%;justify-content:center;margin-bottom:8px" id="pasteJson">📥 Paste JSON</button>
+          <button class="btn" style="width:100%;justify-content:center" id="blankBtn">🧹 Start blank</button>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-head"><h3>Raw JSON</h3></div>
+        <div class="block-body">
+          <label class="field"><span>Edit and press Apply</span>
+            <textarea id="jsonArea" rows="14" spellcheck="false" style="font-family:monospace;font-size:11.5px"></textarea>
+          </label>
+          <button class="btn primary" style="width:100%;justify-content:center" id="applyJson">Apply JSON</button>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-head"><h3>Reset</h3></div>
+        <div class="block-body">
+          <button class="btn" style="width:100%;justify-content:center;color:#dc2626;border-color:#fecaca" id="resetDesign">Reset design</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <section class="preview">
+    <div class="preview-toolbar">
+      <span class="pill" id="zoomLabel">100%</span>
+      <span id="pageLabel">A4 · Portrait</span>
+      <span style="margin-left:auto">Live preview</span>
+    </div>
+    <div class="preview-scroll" id="previewScroll">
+      <div class="scaler" id="scaler">
+        <div class="paper" id="paper"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<input type="file" id="fileInput" accept=".json,application/json" hidden>
+<div id="toast"></div>
+
+<script>
+(function(){
+
+// ---------- paper style (shared with exported html) ----------
+var paperCSS = `
+.paper{
+  position:relative;display:flex;flex-direction:column;overflow:hidden;
+  box-sizing:border-box;background:#fff;color:var(--text);
+  font-size:11pt;line-height:1.45;
+  --mt:14mm;--mr:14mm;--mb:14mm;--ml:14mm;--secgap:12pt;
+  --accent:#2563eb;--heading:#111827;--text:#374151;--link:#2563eb;
+  --sectitle:#1d4ed8;--divider:#d1d5db;--sidebarbg:#f3f4f6;
+  --nameSize:26pt;--titleScale:1.05;--divstyle:solid;--divwidth:1px;
+}
+.paper *{box-sizing:border-box}
+.page-inner{flex:1 1 auto;padding:var(--mt) var(--mr) var(--mb) var(--ml)}
+
+.resume-head{display:flex;gap:14pt;align-items:center;margin-bottom:var(--secgap)}
+.head-text{flex:1;min-width:0}
+.name{margin:0;font-size:var(--nameSize);line-height:1.12;font-weight:700;color:var(--heading);letter-spacing:-.015em;word-break:break-word}
+.jobtitle{margin-top:3pt;font-size:1.08em;font-weight:600;color:var(--accent)}
+.photo{flex:none;object-fit:cover;display:block;border:1px solid rgba(0,0,0,.06)}
+.photo.circle{border-radius:50%}
+.photo.rounded{border-radius:10px}
+.photo.square{border-radius:0}
+.contact{display:flex;flex-wrap:wrap;gap:1pt 10pt;margin-top:6pt;font-size:.87em;color:#4b5563}
+.contact span{white-space:nowrap}
+.contact a{color:var(--link);text-decoration:none}
+.align-center .head-text{text-align:center}
+.align-center .contact{justify-content:center}
+.align-center .resume-head{justify-content:center}
+.align-right .head-text{text-align:right}
+.align-right .contact{justify-content:flex-end}
+
+.sec{margin:0 0 var(--secgap) 0}
+.sec:last-child{margin-bottom:0}
+.sec-title{
+  margin:0 0 6pt 0;font-size:var(--titleScale);font-weight:700;
+  color:var(--sectitle);letter-spacing:.05em;line-height:1.25;
+  padding-bottom:2pt;border-bottom:var(--divwidth) var(--divstyle) var(--divider);
+}
+.uppercase .sec-title{text-transform:uppercase}
+
+.item{margin-bottom:9pt}
+.item:last-child{margin-bottom:0}
+.item-head{display:flex;justify-content:space-between;align-items:baseline;gap:8pt}
+.item-title{font-weight:700;color:var(--heading)}
+.item-date{font-size:.84em;color:#6b7280;white-space:nowrap;flex:none}
+.item-sub{font-size:.93em;font-weight:600;color:var(--accent);margin-top:1pt}
+.item-desc{margin:3pt 0 0;font-size:.97em}
+
+.bullets{margin:4pt 0 0;padding-left:15pt}
+.bullets li{margin-bottom:2pt;font-size:.98em}
+.bullets li::marker{color:var(--accent)}
+
+.skill-row{margin-bottom:4pt;font-size:.98em}
+.skill-row:last-child{margin-bottom:0}
+.skill-cat{font-weight:700;color:var(--heading)}
+
+.chip-list{display:flex;flex-wrap:wrap;gap:4pt 8pt}
+.chip{font-size:.93em}
+.chip b{color:var(--heading)}
+
+.custom-body p{margin:0 0 5pt}
+.custom-body p:last-child{margin-bottom:0}
+
+.footer{margin-top:auto;padding:0 var(--mr) 6mm var(--ml);font-size:.78em;color:#9ca3af;text-align:center}
+.paper a{color:var(--link)}
+
+.layout-sidebar-left .page-inner,
+.layout-sidebar-right .page-inner{display:flex;padding:0;align-items:stretch}
+.layout-sidebar-left .sidebar{width:35%;flex:none;background:var(--sidebarbg);padding:var(--mt) 6mm var(--mb) var(--ml)}
+.layout-sidebar-left .main{flex:1;min-width:0;padding:var(--mt) var(--mr) var(--mb) 6mm}
+.layout-sidebar-right .page-inner{flex-direction:row-reverse}
+.layout-sidebar-right .sidebar{width:35%;flex:none;background:var(--sidebarbg);padding:var(--mt) var(--mr) var(--mb) 6mm}
+.layout-sidebar-right .main{flex:1;min-width:0;padding:var(--mt) 6mm var(--mb) var(--ml)}
+.sidebar .resume-head{flex-direction:column;align-items:flex-start;margin-bottom:10pt}
+.sidebar .contact{flex-direction:column;gap:3pt}
+.sidebar .contact span{white-space:normal}
+.sidebar .sec-title{font-size:.95em}
+
+.tpl-modern .name{color:var(--accent)}
+.tpl-modern .sec-title{border-bottom:0;padding-left:9pt;position:relative}
+.tpl-modern .sec-title::before{content:'';position:absolute;left:0;top:.1em;bottom:.1em;width:3pt;background:var(--accent);border-radius:2pt}
+.tpl-minimal .resume-head{border-bottom:2px solid var(--heading);padding-bottom:10pt}
+.tpl-minimal .sec-title{border-bottom:0;font-size:.82em;letter-spacing:.16em;color:#9ca3af}
+.tpl-minimal .jobtitle{color:#6b7280}
+.tpl-elegant .resume-head{flex-direction:column;align-items:center;text-align:center}
+.tpl-elegant .head-text{text-align:center;width:100%}
+.tpl-elegant .contact{justify-content:center}
+.tpl-elegant .sec-title{border-bottom:0;text-align:center;position:relative}
+.tpl-elegant .sec-title::before,
+.tpl-elegant .sec-title::after{content:'';position:absolute;top:55%;width:26%;height:1px;background:var(--divider)}
+.tpl-elegant .sec-title::before{left:0}
+.tpl-elegant .sec-title::after{right:0}
+.tpl-elegant .item-head{justify-content:center;gap:6pt}
+.tpl-elegant .item-sub{text-align:center}
+
+@media print{
+  .paper{width:100%!important;min-height:0!important;overflow:visible!important;box-shadow:none!important;border-radius:0!important;margin:0!important}
+}
+`;
+
+// ---------- default design ----------
+var defaultDesign = {
+  template:'classic', layout:'one', pageSize:'A4', orientation:'portrait',
+  marginTop:14, marginRight:14, marginBottom:14, marginLeft:14,
+  fontFamily:'Inter, Arial, sans-serif',
+  fontSize:11, nameSize:26, lineHeight:1.45, sectionGap:12, titleScale:1.05,
+  uppercaseTitles:true,
+  accent:'#2563eb', headingColor:'#111827', textColor:'#374151',
+  bgColor:'#ffffff', linkColor:'#2563eb', sectionTitleColor:'#1d4ed8',
+  dividerColor:'#d1d5db', sidebarBg:'#f3f4f6',
+  dividerStyle:'solid', dividerWidth:1,
+  headAlign:'left', showPhoto:true, photoShape:'circle', photoSize:84,
+  showFooter:false, footerText:''
+};
+
+// ---------- section titles ----------
+var sectionTitles = {
+  summary:'Summary', experience:'Work Experience', education:'Education',
+  skills:'Skills', projects:'Projects', certifications:'Certifications',
+  awards:'Awards', languages:'Languages', volunteer:'Volunteer Work'
+};
+
+var defaultOrder = ['summary','experience','education','skills','projects','certifications','awards','languages','volunteer'];
+
+var sidebarKeys = ['skills','education','languages','certifications','awards'];
+
+// ---------- blank resume ----------
+function blankResume(){
+  return {
+    personal:{name:'',title:'',email:'',phone:'',location:'',website:'',linkedin:'',github:'',photo:''},
+    summary:'',
+    experience:[], education:[], skills:[], projects:[],
+    certifications:[], awards:[], languages:[], volunteer:[],
+    custom:[],
+    sectionOrder: defaultOrder.slice(),
+    hidden:{},
+    design: JSON.parse(JSON.stringify(defaultDesign))
+  };
+}
+
+// ---------- sample resume ----------
+var sampleResume = {
+  personal:{
+    name:'Juan Dela Cruz', title:'Frontend Developer',
+    email:'juan@email.com', phone:'+63 123 456 7890',
+    location:'Manila, Philippines', website:'https://juan.dev',
+    linkedin:'linkedin.com/in/juandc', github:'github.com/juandc', photo:''
+  },
+  summary:'Frontend developer with 3+ years of experience building responsive, accessible web apps.\nSpecialised in React and modern JavaScript, with a focus on performance and clean UI.',
+  experience:[
+    {role:'Frontend Developer', company:'ABC Corp', location:'Makati', start:'Jan 2022', end:'', current:true,
+     bullets:['Built responsive UI components with React used by 50k+ monthly users','Improved page speed by 40% through code-splitting','Shipped a design-system refresh in 3 months']},
+    {role:'Junior Web Developer', company:'StartUp PH', location:'Taguig', start:'Jun 2020', end:'Dec 2021', current:false,
+     bullets:['Built 12+ client landing pages','Integrated REST APIs and cut bug turnaround by 30%']}
+  ],
+  education:[
+    {degree:'BS Computer Science', school:'University of the Philippines', location:'Diliman',
+     start:'2016', end:'2020', gpa:'1.45 — Cum Laude', details:'Coursework: Data Structures, Web Systems, HCI.'}
+  ],
+  skills:[
+    {category:'Languages', items:['HTML','CSS','JavaScript','TypeScript']},
+    {category:'Frameworks', items:['React','Next.js','Vue','Tailwind']},
+    {category:'Tools', items:['Git','Vite','Figma','Jest']}
+  ],
+  projects:[
+    {name:'Resume Builder', link:'github.com/juandc/resume-builder', tech:['Vanilla JS','localStorage'],
+     description:'A client-side resume builder with live preview and PDF/JSON export.'},
+    {name:'Weather Dashboard', link:'juan.dev/weather', tech:['React','OpenWeather API'],
+     description:'Real-time weather with location search and 7-day forecast.'}
+  ],
+  certifications:[
+    {name:'AWS Cloud Practitioner', issuer:'Amazon Web Services', date:'2023'},
+    {name:'Meta Front-End Developer', issuer:'Coursera', date:'2022'}
+  ],
+  awards:[{name:'Employee of the Year', issuer:'ABC Corp', date:'2023'}],
+  languages:[{name:'English', level:'Fluent'},{name:'Filipino', level:'Native'}],
+  volunteer:[{role:'Volunteer Web Mentor', org:'Code.org Philippines', start:'2021', end:'Present',
+    description:'Mentor beginners in weekly HTML/CSS/JS workshops.'}],
+  custom:[],
+  sectionOrder: defaultOrder.slice(),
+  hidden:{},
+  design: JSON.parse(JSON.stringify(defaultDesign))
+};
+
+// ---------- list item fields ----------
+var listInfo = {
+  experience:{
+    fields:[
+      {key:'role', label:'Job Title', ph:'e.g. Software Engineer', half:true},
+      {key:'company', label:'Company', ph:'ABC Corp', half:true},
+      {key:'location', label:'Location', ph:'Manila', half:true},
+      {key:'start', label:'Start Date', ph:'Jan 2022', half:true},
+      {key:'end', label:'End Date', ph:'Present', half:true},
+      {key:'current', label:'Currently work here', type:'checkbox', half:true},
+      {key:'bullets', label:'Bullet points (one per line)', type:'lines', rows:5}
+    ],
+    title:function(it){return it.role || it.company || 'New Position'}
+  },
+  education:{
+    fields:[
+      {key:'degree', label:'Degree', ph:'BS Computer Science', half:true},
+      {key:'school', label:'School', ph:'University of the Philippines', half:true},
+      {key:'location', label:'Location', ph:'Quezon City', half:true},
+      {key:'start', label:'Start', ph:'2016', half:true},
+      {key:'end', label:'End', ph:'2020', half:true},
+      {key:'gpa', label:'GPA / Honors', ph:'1.45 — Cum Laude', half:true},
+      {key:'details', label:'Details', type:'textarea', rows:2}
+    ],
+    title:function(it){return it.degree || it.school || 'New Education'}
+  },
+  skills:{
+    fields:[
+      {key:'category', label:'Category', ph:'Languages', half:true},
+      {key:'items', label:'Skills (comma separated)', type:'csv', ph:'HTML, CSS, JavaScript'}
+    ],
+    title:function(it){return it.category || 'New Skill Group'}
+  },
+  projects:{
+    fields:[
+      {key:'name', label:'Project Name', ph:'Portfolio Website', half:true},
+      {key:'link', label:'Link', ph:'github.com/you/project', half:true},
+      {key:'tech', label:'Tech (comma separated)', type:'csv', ph:'React, Node.js'},
+      {key:'description', label:'Description', type:'textarea', rows:3}
+    ],
+    title:function(it){return it.name || 'New Project'}
+  },
+  certifications:{
+    fields:[
+      {key:'name', label:'Certification', ph:'AWS Certified Developer', half:true},
+      {key:'issuer', label:'Issuer', ph:'Amazon Web Services', half:true},
+      {key:'date', label:'Date', ph:'2023', half:true}
+    ],
+    title:function(it){return it.name || 'New Certification'}
+  },
+  awards:{
+    fields:[
+      {key:'name', label:'Award', ph:'Employee of the Year', half:true},
+      {key:'issuer', label:'Issuer', ph:'ABC Corp', half:true},
+      {key:'date', label:'Date', ph:'2023', half:true}
+    ],
+    title:function(it){return it.name || 'New Award'}
+  },
+  languages:{
+    fields:[
+      {key:'name', label:'Language', ph:'English', half:true},
+      {key:'level', label:'Level', ph:'Fluent', half:true}
+    ],
+    title:function(it){return it.name || 'New Language'}
+  },
+  volunteer:{
+    fields:[
+      {key:'role', label:'Role', ph:'Volunteer Teacher', half:true},
+      {key:'org', label:'Organization', ph:'NGO Name', half:true},
+      {key:'start', label:'Start', ph:'2020', half:true},
+      {key:'end', label:'End', ph:'2021', half:true},
+      {key:'description', label:'Description', type:'textarea', rows:2}
+    ],
+    title:function(it){return it.role || it.org || 'New Volunteer Role'}
+  }
+};
+
+// ---------- state ----------
+var resume = blankResume();
+var storageKey = 'resumeBuilder.v1';
+var autosaveTimer = null;
+
+// ---------- shortcuts ----------
+function $(id){ return document.getElementById(id); }
+function clone(o){ return JSON.parse(JSON.stringify(o)); }
+
+// ---------- escape html ----------
+function esc(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+    if(c === '&') return '&amp;';
+    if(c === '<') return '&lt;';
+    if(c === '>') return '&gt;';
+    if(c === '"') return '&quot;';
+    return '&#39;';
+  });
+}
+
+// ---------- to array ----------
+function toArray(v){
+  if(Array.isArray(v)) return v;
+  if(typeof v === 'string') return v.split(/\n|,/).map(function(s){return s.trim()}).filter(Boolean);
+  return [];
+}
+
+// ---------- make links clickable ----------
+function linkify(u){
+  var raw = String(u || '').trim();
+  if(!raw) return '';
+  var href = /^https?:\/\//i.test(raw) ? raw : 'https://' + raw;
+  return '<a href="' + esc(href) + '" target="_blank" rel="noopener">' + esc(raw.replace(/^https?:\/\//i,'')) + '</a>';
+}
+
+// ---------- newline to paragraphs ----------
+function nl2p(text){
+  return String(text || '').split(/\n{2,}/).map(function(b){
+    return '<p>' + esc(b).replace(/\n/g,'<br>') + '</p>';
+  }).join('');
+}
+
+// ---------- bullets ----------
+function bulletsHTML(arr){
+  var items = toArray(arr);
+  if(!items.length) return '';
+  return '<ul class="bullets">' + items.map(function(b){return '<li>' + esc(b) + '</li>'}).join('') + '</ul>';
+}
+
+// ---------- toast ----------
+function toast(msg){
+  var t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(function(){ t.classList.remove('show') }, 2400);
+}
+
+// ---------- download a file ----------
+function download(blob, name){
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(url) }, 1500);
+}
+
+// ---------- safe filename ----------
+function safeName(){
+  var n = (resume.personal.name || 'resume').trim().replace(/[^\w\s-]/g,'').replace(/\s+/g,'-');
+  return n || 'resume';
+}
+
+// ---------- read/write path ----------
+function getPath(path){
+  return path.split('.').reduce(function(o,k){ return o == null ? undefined : o[k] }, resume);
+}
+
+function setPath(path, value){
+  var parts = path.split('.');
+  var o = resume;
+  for(var i = 0; i < parts.length - 1; i++) o = o[parts[i]];
+  o[parts[parts.length - 1]] = value;
+}
+
+// ---------- load resume, fix missing fields ----------
+function fixResume(input){
+  var base = blankResume();
+  var d = Object.assign(base, input || {});
+  d.personal = Object.assign(blankResume().personal, (input && input.personal) || {});
+  d.design = Object.assign({}, defaultDesign, (input && input.design) || {});
+  d.hidden = Object.assign({}, (input && input.hidden) || {});
+  d.summary = typeof d.summary === 'string' ? d.summary : '';
+
+  ['experience','education','skills','projects','certifications','awards','languages','volunteer','custom'].forEach(function(k){
+    if(!Array.isArray(d[k])) d[k] = [];
+  });
+
+  d.custom = d.custom.map(function(c){
+    return {id: c.id || ('c' + Math.random().toString(36).slice(2,8)), title: c.title || 'Custom Section', content: c.content || ''};
+  });
+
+  if(!Array.isArray(d.sectionOrder) || !d.sectionOrder.length){
+    d.sectionOrder = defaultOrder.slice();
+  }
+  d.custom.forEach(function(c){
+    var key = 'custom:' + c.id;
+    if(d.sectionOrder.indexOf(key) < 0) d.sectionOrder.push(key);
+  });
+  d.sectionOrder = d.sectionOrder.filter(function(k){
+    return k.indexOf('custom:') !== 0 || d.custom.some(function(c){ return 'custom:' + c.id === k });
+  });
+
+  Object.keys(listInfo).forEach(function(section){
+    listInfo[section].fields.forEach(function(f){
+      if(f.type === 'lines' || f.type === 'csv'){
+        d[section].forEach(function(item){ item[f.key] = toArray(item[f.key]) });
+      }
+    });
+  });
+
+  return d;
+}
+
+// ---------- page sizes ----------
+var pageSizes = { A4:[210,297], Letter:[215.9,279.4], Legal:[215.9,355.6] };
+
+function pageDims(){
+  var s = pageSizes[resume.design.pageSize] || pageSizes.A4;
+  var w = s[0], h = s[1];
+  if(resume.design.orientation === 'landscape'){ var t = w; w = h; h = t; }
+  return [w, h];
+}
+
+// ---------- section title for a key ----------
+function titleOf(key){
+  if(key.indexOf('custom:') === 0){
+    var c = resume.custom.find(function(x){ return x.id === key.slice(7) });
+    return c ? (c.title || 'Custom Section') : 'Custom Section';
+  }
+  return sectionTitles[key] || key;
+}
+
+// ---------- wrap a section ----------
+function wrapSection(key, title, body){
+  return '<section class="sec"><h2 class="sec-title">' + esc(title) + '</h2>' + body + '</section>';
+}
+
+// ---------- contact line ----------
+function contactHTML(){
+  var p = resume.personal;
+  var bits = [];
+  if(p.email) bits.push('<span><a href="mailto:' + esc(p.email) + '">' + esc(p.email) + '</a></span>');
+  if(p.phone) bits.push('<span>' + esc(p.phone) + '</span>');
+  if(p.location) bits.push('<span>' + esc(p.location) + '</span>');
+  if(p.website) bits.push('<span>' + linkify(p.website) + '</span>');
+  if(p.linkedin) bits.push('<span>' + linkify(p.linkedin) + '</span>');
+  if(p.github) bits.push('<span>' + linkify(p.github) + '</span>');
+  return bits.length ? '<div class="contact">' + bits.join('') + '</div>' : '';
+}
+
+// ---------- photo ----------
+function photoHTML(){
+  var d = resume, des = d.design, p = d.personal;
+  if(!des.showPhoto || !p.photo) return '';
+  var size = Math.max(40, Math.min(200, Number(des.photoSize) || 84));
+  return '<img class="photo ' + esc(des.photoShape) + '" src="' + esc(p.photo) + '" alt="" style="width:' + size + 'px;height:' + size + 'px">';
+}
+
+// ---------- big header block ----------
+function headerHTML(showContact){
+  var d = resume, p = d.personal;
+  return '<header class="resume-head"><div class="head-text">' +
+    '<h1 class="name">' + esc(p.name || 'Your Name') + '</h1>' +
+    (p.title ? '<div class="jobtitle">' + esc(p.title) + '</div>' : '') +
+    (showContact ? contactHTML() : '') +
+    '</div>' +
+    (showContact ? photoHTML() : '') +
+    '</header>';
+}
+
+// ---------- build one section ----------
+function buildSection(key){
+  var d = resume;
+
+  if(key.indexOf('custom:') === 0){
+    var c = d.custom.find(function(x){ return x.id === key.slice(7) });
+    if(!c) return '';
+    if(!c.title && !(c.content||'').trim()) return '';
+    return wrapSection(key, c.title || 'Section', (c.content||'').trim() ? '<div class="custom-body">' + nl2p(c.content) + '</div>' : '');
+  }
+
+  if(key === 'summary'){
+    if(!(d.summary||'').trim()) return '';
+    return wrapSection(key, 'Summary', '<div class="custom-body">' + nl2p(d.summary) + '</div>');
+  }
+
+  if(key === 'experience'){
+    var list = d.experience.filter(function(e){ return e.role || e.company || toArray(e.bullets).length });
+    if(!list.length) return '';
+    var body = list.map(function(e){
+      var end = e.current ? 'Present' : (e.end || '');
+      var date = [e.start, end].filter(Boolean).join(' – ');
+      var sub = [e.company, e.location].filter(Boolean).join(' · ');
+      return '<div class="item"><div class="item-head">' +
+        '<span class="item-title">' + esc(e.role||'') + '</span>' +
+        (date ? '<span class="item-date">' + esc(date) + '</span>' : '') +
+        '</div>' +
+        (sub ? '<div class="item-sub">' + esc(sub) + '</div>' : '') +
+        bulletsHTML(e.bullets) + '</div>';
+    }).join('');
+    return wrapSection(key, 'Work Experience', body);
+  }
+
+  if(key === 'education'){
+    var list = d.education.filter(function(e){ return e.degree || e.school });
+    if(!list.length) return '';
+    var body = list.map(function(e){
+      var date = [e.start, e.end].filter(Boolean).join(' – ');
+      var sub = [e.school, e.location].filter(Boolean).join(' · ');
+      return '<div class="item"><div class="item-head">' +
+        '<span class="item-title">' + esc(e.degree||'') + '</span>' +
+        (date ? '<span class="item-date">' + esc(date) + '</span>' : '') +
+        '</div>' +
+        (sub ? '<div class="item-sub">' + esc(sub) + '</div>' : '') +
+        (e.gpa ? '<div class="item-desc">' + esc(e.gpa) + '</div>' : '') +
+        ((e.details||'').trim() ? '<div class="item-desc">' + esc(e.details) + '</div>' : '') +
+        '</div>';
+    }).join('');
+    return wrapSection(key, 'Education', body);
+  }
+
+  if(key === 'skills'){
+    var list = d.skills.filter(function(s){ return s.category || toArray(s.items).length });
+    if(!list.length) return '';
+    var body = list.map(function(s){
+      return '<div class="skill-row">' +
+        (s.category ? '<span class="skill-cat">' + esc(s.category) + ':</span> ' : '') +
+        '<span>' + toArray(s.items).map(esc).join(', ') + '</span></div>';
+    }).join('');
+    return wrapSection(key, 'Skills', body);
+  }
+
+  if(key === 'projects'){
+    var list = d.projects.filter(function(p){ return p.name || p.description });
+    if(!list.length) return '';
+    var body = list.map(function(p){
+      var tech = toArray(p.tech);
+      return '<div class="item"><div class="item-head">' +
+        '<span class="item-title">' + esc(p.name||'') + '</span>' +
+        (p.link ? '<span class="item-date">' + linkify(p.link) + '</span>' : '') +
+        '</div>' +
+        (tech.length ? '<div class="item-sub">' + tech.map(esc).join(' · ') + '</div>' : '') +
+        ((p.description||'').trim() ? '<div class="item-desc">' + esc(p.description) + '</div>' : '') +
+        '</div>';
+    }).join('');
+    return wrapSection(key, 'Projects', body);
+  }
+
+  if(key === 'certifications'){
+    var list = d.certifications.filter(function(c){ return c.name });
+    if(!list.length) return '';
+    var body = list.map(function(c){
+      return '<div class="item"><div class="item-head">' +
+        '<span class="item-title">' + esc(c.name) + '</span>' +
+        (c.date ? '<span class="item-date">' + esc(c.date) + '</span>' : '') +
+        '</div>' +
+        (c.issuer ? '<div class="item-sub">' + esc(c.issuer) + '</div>' : '') +
+        '</div>';
+    }).join('');
+    return wrapSection(key, 'Certifications', body);
+  }
+
+  if(key === 'awards'){
+    var list = d.awards.filter(function(a){ return a.name });
+    if(!list.length) return '';
+    var body = list.map(function(a){
+      return '<div class="item"><div class="item-head">' +
+        '<span class="item-title">' + esc(a.name) + '</span>' +
+        (a.date ? '<span class="item-date">' + esc(a.date) + '</span>' : '') +
+        '</div>' +
+        (a.issuer ? '<div class="item-sub">' + esc(a.issuer) + '</div>' : '') +
+        '</div>';
+    }).join('');
+    return wrapSection(key, 'Awards', body);
+  }
+
+  if(key === 'languages'){
+    var list = d.languages.filter(function(l){ return l.name });
+    if(!list.length) return '';
+    var body = '<div class="chip-list">' + list.map(function(l){
+      return '<span class="chip"><b>' + esc(l.name) + '</b>' + (l.level ? ' — ' + esc(l.level) : '') + '</span>';
+    }).join('') + '</div>';
+    return wrapSection(key, 'Languages', body);
+  }
+
+  if(key === 'volunteer'){
+    var list = d.volunteer.filter(function(v){ return v.role || v.org });
+    if(!list.length) return '';
+    var body = list.map(function(v){
+      var date = [v.start, v.end].filter(Boolean).join(' – ');
+      return '<div class="item"><div class="item-head">' +
+        '<span class="item-title">' + esc(v.role||'') + '</span>' +
+        (date ? '<span class="item-date">' + esc(date) + '</span>' : '') +
+        '</div>' +
+        (v.org ? '<div class="item-sub">' + esc(v.org) + '</div>' : '') +
+        ((v.description||'').trim() ? '<div class="item-desc">' + esc(v.description) + '</div>' : '') +
+        '</div>';
+    }).join('');
+    return wrapSection(key, 'Volunteer Work', body);
+  }
+
+  return '';
+}
+
+// ---------- build whole paper ----------
+function buildResume(){
+  var d = resume;
+  var blocks = [];
+  d.sectionOrder.forEach(function(key){
+    if(d.hidden[key]) return;
+    var html = buildSection(key);
+    if(html) blocks.push({key:key, html:html});
+  });
+
+  var inner = '';
+  if(d.design.layout === 'one'){
+    inner = '<div class="page-inner">' + headerHTML(true) +
+      blocks.map(function(b){ return b.html }).join('') + '</div>';
+  } else {
+    var side = blocks.filter(function(b){ return sidebarKeys.indexOf(b.key) >= 0 }).map(function(b){ return b.html }).join('');
+    var main = blocks.filter(function(b){ return sidebarKeys.indexOf(b.key) < 0 }).map(function(b){ return b.html }).join('');
+    inner = '<div class="page-inner">' +
+      '<aside class="sidebar">' + photoHTML() + contactHTML() + side + '</aside>' +
+      '<div class="main"><header class="resume-head"><div class="head-text">' +
+      '<h1 class="name">' + esc(d.personal.name || 'Your Name') + '</h1>' +
+      (d.personal.title ? '<div class="jobtitle">' + esc(d.personal.title) + '</div>' : '') +
+      '</div></header>' + main + '</div></div>';
+  }
+
+  var footer = d.design.showFooter && (d.design.footerText || '').trim()
+    ? '<div class="footer">' + esc(d.design.footerText) + '</div>' : '';
+
+  return inner + footer;
+}
+
+// ---------- update the live preview ----------
+function updatePreview(){
+  var d = resume, des = d.design;
+  var paper = $('paper');
+  var dims = pageDims();
+  var pw = dims[0], ph = dims[1];
+
+  paper.className = 'paper tpl-' + des.template +
+    ' layout-' + des.layout + ' align-' + des.headAlign +
+    (des.uppercaseTitles ? ' uppercase' : '');
+
+  paper.style.width = pw + 'mm';
+  paper.style.minHeight = ph + 'mm';
+  paper.style.background = des.bgColor;
+  paper.style.color = des.textColor;
+  paper.style.fontFamily = des.fontFamily;
+  paper.style.fontSize = (Number(des.fontSize) || 11) + 'pt';
+  paper.style.lineHeight = des.lineHeight;
+
+  var s = paper.style;
+  s.setProperty('--mt', des.marginTop + 'mm');
+  s.setProperty('--mr', des.marginRight + 'mm');
+  s.setProperty('--mb', des.marginBottom + 'mm');
+  s.setProperty('--ml', des.marginLeft + 'mm');
+  s.setProperty('--secgap', (Number(des.sectionGap) || 12) + 'pt');
+  s.setProperty('--accent', des.accent);
+  s.setProperty('--heading', des.headingColor);
+  s.setProperty('--text', des.textColor);
+  s.setProperty('--link', des.linkColor);
+  s.setProperty('--sectitle', des.sectionTitleColor);
+  s.setProperty('--divider', des.dividerColor);
+  s.setProperty('--sidebarbg', des.sidebarBg);
+  s.setProperty('--nameSize', (Number(des.nameSize) || 26) + 'pt');
+  s.setProperty('--titleScale', (Number(des.titleScale) || 1.05) + 'em');
+  s.setProperty('--divstyle', des.dividerStyle);
+  s.setProperty('--divwidth', (Number(des.dividerWidth) || 0) + 'px');
+
+  paper.innerHTML = buildResume();
+
+  $('pageLabel').textContent = des.pageSize + ' · ' + (des.orientation === 'portrait' ? 'Portrait' : 'Landscape');
+
+  var tag = document.getElementById('pageSizeTag');
+  if(!tag){ tag = document.createElement('style'); tag.id = 'pageSizeTag'; document.head.appendChild(tag); }
+  tag.textContent = '@page{size:' + pw + 'mm ' + ph + 'mm;margin:0}';
+
+  fitPreview();
+}
+
+// ---------- scale paper to fit the screen ----------
+function fitPreview(){
+  var scroll = $('previewScroll');
+  var scaler = $('scaler');
+  var paper = $('paper');
+  if(!scroll || !paper) return;
+
+  var avail = scroll.clientWidth - 52;
+  var pw = paper.offsetWidth;
+  if(!pw || avail <= 0) return;
+
+  var scale = Math.min(1, avail / pw);
+  paper.style.transformOrigin = 'top left';
+  paper.style.transform = scale === 1 ? 'none' : 'scale(' + scale + ')';
+  scaler.style.width = (pw * scale) + 'px';
+  scaler.style.height = (paper.offsetHeight * scale) + 'px';
+  $('zoomLabel').textContent = Math.round(scale * 100) + '%';
+}
+
+// ---------- field builder ----------
+function buildField(path, def, value){
+  var type = def.type || 'text';
+  var label = def.label || '';
+  var ph = esc(def.ph || '');
+  var cls = 'field' + (def.half ? ' half' : '');
+
+  if(type === 'checkbox'){
+    return '<label class="' + cls + ' checkbox"><input type="checkbox" data-path="' + path + '" ' + (value ? 'checked' : '') + '><span>' + esc(label) + '</span></label>';
+  }
+
+  if(type === 'textarea' || type === 'lines' || type === 'csv'){
+    var v = Array.isArray(value) ? value.join(type === 'csv' ? ', ' : '\n') : (value || '');
+    return '<label class="' + cls + '"><span>' + esc(label) + '</span><textarea rows="' + (def.rows || 3) + '" data-path="' + path + '" data-type="' + type + '" placeholder="' + ph + '">' + esc(v) + '</textarea></label>';
+  }
+
+  return '<label class="' + cls + '"><span>' + esc(label) + '</span><input type="text" data-path="' + path + '" value="' + esc(value || '') + '" placeholder="' + ph + '"></label>';
+}
+
+// ---------- list block (add / remove / move) ----------
+function buildListBlock(sectionKey){
+  var def = listInfo[sectionKey];
+  var arr = resume[sectionKey] || [];
+
+  var cards = arr.map(function(item, i){
+    var fields = def.fields.map(function(f){ return buildField(sectionKey + '.' + i + '.' + f.key, f, item[f.key]) }).join('');
+    return '<div class="card"><div class="card-head">' +
+      '<span class="card-title">' + esc(def.title(item) || 'Item') + '</span>' +
+      '<button class="mini" data-action="up" data-section="' + sectionKey + '" data-index="' + i + '" ' + (i === 0 ? 'disabled' : '') + ' title="Move up">↑</button>' +
+      '<button class="mini" data-action="down" data-section="' + sectionKey + '" data-index="' + i + '" ' + (i === arr.length - 1 ? 'disabled' : '') + ' title="Move down">↓</button>' +
+      '<button class="mini danger" data-action="del" data-section="' + sectionKey + '" data-index="' + i + '" title="Delete">✕</button>' +
+      '</div><div class="fields">' + fields + '</div></div>';
+  }).join('');
+
+  return '<div class="block-body">' +
+    (cards || '<p class="hint" style="margin:0 0 8px">Nothing here yet.</p>') +
+    '<button class="btn" style="width:100%;justify-content:center" data-action="add" data-section="' + sectionKey + '">+ Add</button>' +
+    '</div>';
+}
+
+// ---------- custom sections block ----------
+function buildCustomBlock(){
+  var cards = resume.custom.map(function(c, i){
+    return '<div class="card"><div class="card-head">' +
+      '<span class="card-title">' + esc(c.title || 'Custom Section') + '</span>' +
+      '<button class="mini danger" data-action="delcustom" data-id="' + c.id + '" title="Delete">✕</button>' +
+      '</div><div class="fields">' +
+      '<label class="field"><span>Section title</span><input type="text" data-path="custom.' + i + '.title" value="' + esc(c.title||'') + '" placeholder="e.g. Publications"></label>' +
+      '<label class="field"><span>Content</span><textarea rows="4" data-path="custom.' + i + '.content" placeholder="Write anything you like…">' + esc(c.content||'') + '</textarea></label>' +
+      '</div></div>';
+  }).join('');
+
+  return '<div class="block-body">' +
+    (cards || '<p class="hint" style="margin:0 0 8px">Add your own section — publications, interests, etc.</p>') +
+    '<button class="btn" style="width:100%;justify-content:center" data-action="addcustom">+ Add custom section</button>' +
+    '</div>';
+}
+
+// ---------- one section block in the editor ----------
+function buildSectionBlock(key){
+  var d = resume;
+  var idx = d.sectionOrder.indexOf(key);
+  var hidden = !!d.hidden[key];
+  var isCustom = key.indexOf('custom:') === 0;
+
+  var head = '<div class="block-head"><h3>' + esc(titleOf(key)) + '</h3><div class="block-tools">' +
+    '<button class="mini" data-action="move" data-dir="-1" data-key="' + esc(key) + '" ' + (idx === 0 ? 'disabled' : '') + ' title="Move up">↑</button>' +
+    '<button class="mini" data-action="move" data-dir="1" data-key="' + esc(key) + '" ' + (idx === d.sectionOrder.length - 1 ? 'disabled' : '') + ' title="Move down">↓</button>' +
+    '<button class="mini ' + (hidden ? '' : 'on') + '" data-action="toggle" data-key="' + esc(key) + '" title="Show/hide">' + (hidden ? '🚫' : '👁') + '</button>' +
+    '</div></div>';
+
+  var body = '';
+  if(isCustom){
+    body = '';
+  } else if(key === 'summary'){
+    body = '<div class="block-body"><label class="field"><span>About me</span>' +
+      '<textarea rows="6" data-path="summary" placeholder="Short paragraph about who you are…">' + esc(resume.summary) + '</textarea></label></div>';
+  } else if(listInfo[key]){
+    body = buildListBlock(key);
+  } else {
+    return '';
+  }
+
+  return '<div class="block ' + (hidden ? 'is-hidden' : '') + '" data-key="' + esc(key) + '">' + head + body + '</div>';
+}
+
+// ---------- personal info block ----------
+function buildPersonalBlock(){
+  var p = resume.personal;
+  return '<div class="block"><div class="block-head"><h3>Personal Info</h3></div><div class="block-body"><div class="fields">' +
+    '<label class="field half"><span>Full name</span><input type="text" data-path="personal.name" value="' + esc(p.name) + '" placeholder="Juan Dela Cruz"></label>' +
+    '<label class="field half"><span>Job title</span><input type="text" data-path="personal.title" value="' + esc(p.title) + '" placeholder="Frontend Developer"></label>' +
+    '<label class="field half"><span>Email</span><input type="text" data-path="personal.email" value="' + esc(p.email) + '" placeholder="juan@email.com"></label>' +
+    '<label class="field half"><span>Phone</span><input type="text" data-path="personal.phone" value="' + esc(p.phone) + '" placeholder="+63 123 456 7890"></label>' +
+    '<label class="field half"><span>Location</span><input type="text" data-path="personal.location" value="' + esc(p.location) + '" placeholder="Manila, Philippines"></label>' +
+    '<label class="field half"><span>Website</span><input type="text" data-path="personal.website" value="' + esc(p.website) + '" placeholder="https://juan.dev"></label>' +
+    '<label class="field half"><span>LinkedIn</span><input type="text" data-path="personal.linkedin" value="' + esc(p.linkedin) + '" placeholder="linkedin.com/in/juandc"></label>' +
+    '<label class="field half"><span>GitHub</span><input type="text" data-path="personal.github" value="' + esc(p.github) + '" placeholder="github.com/juandc"></label>' +
+    '<label class="field"><span>Photo URL</span><input type="text" data-path="personal.photo" value="' + esc(p.photo) + '" placeholder="https://…/photo.jpg"></label>' +
+    '</div><div style="display:flex;gap:8px">' +
+    '<button class="btn" style="flex:1;justify-content:center" id="photoUpload">📷 Upload photo</button>' +
+    '<button class="btn" style="flex:none" id="photoClear">Clear</button>' +
+    '</div><input type="file" id="photoInput" accept="image/*" hidden></div></div>';
+}
+
+// ---------- draw the editor ----------
+function drawEditor(){
+  var d = resume;
+  var panel = $('contentPanel');
+
+  var customKeys = d.sectionOrder.filter(function(k){ return k.indexOf('custom:') === 0 });
+  var normalKeys = d.sectionOrder.filter(function(k){ return k.indexOf('custom:') !== 0 });
+
+  var html = buildPersonalBlock();
+  html += normalKeys.map(buildSectionBlock).join('');
+  html += '<div class="block"><div class="block-head"><h3>Custom Sections</h3></div>' + buildCustomBlock() + '</div>';
+  html += customKeys.map(buildSectionBlock).join('');
+
+  panel.innerHTML = html;
+}
+
+// ---------- sync the design inputs ----------
+function syncInputs(root){
+  (root || document).querySelectorAll('[data-path]').forEach(function(input){
+    if(input.closest('#contentPanel')) return;
+    var v = getPath(input.dataset.path);
+    if(input.type === 'checkbox'){
+      input.checked = !!v;
+    } else if(Array.isArray(v)){
+      input.value = v.join(input.dataset.type === 'csv' ? ', ' : '\n');
+    } else {
+      input.value = (v === undefined || v === null) ? '' : v;
+    }
+  });
+}
+
+// ---------- update a card title while typing ----------
+function updateCardTitle(input){
+  var card = input.closest('.card');
+  if(!card) return;
+  var block = card.closest('.block');
+  if(!block || !block.dataset.key) return;
+  var section = block.dataset.key;
+  if(!listInfo[section]) return;
+
+  var cards = card.parentElement.querySelectorAll('.card');
+  var index = Array.prototype.indexOf.call(cards, card);
+  var item = resume[section][index];
+  if(!item) return;
+
+  var titleEl = card.querySelector('.card-title');
+  if(titleEl) titleEl.textContent = listInfo[section].title(item) || 'Item';
+}
+
+// ---------- save to localStorage ----------
+function saveSoon(){
+  clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(saveNow, 700);
+}
+
+function saveNow(){
+  try { localStorage.setItem(storageKey, JSON.stringify(resume)); } catch(e){}
+}
+
+function loadSaved(){
+  try {
+    var raw = localStorage.getItem(storageKey);
+    if(!raw) return null;
+    return fixResume(JSON.parse(raw));
+  } catch(e){ return null; }
+}
+
+// ---------- input handling ----------
+function handleInput(e){
+  var input = e.target;
+  var path = input.dataset.path;
+  if(!path) return;
+
+  var value;
+  if(input.type === 'checkbox'){
+    value = input.checked;
+  } else if(input.dataset.type === 'lines'){
+    value = input.value.split('\n').map(function(s){ return s.trim() }).filter(Boolean);
+  } else if(input.dataset.type === 'csv'){
+    value = input.value.split(',').map(function(s){ return s.trim() }).filter(Boolean);
+  } else if(input.type === 'number'){
+    var n = parseFloat(input.value);
+    value = isNaN(n) ? 0 : n;
+  } else {
+    value = input.value;
+  }
+
+  setPath(path, value);
+  updatePreview();
+  saveSoon();
+
+  if(input.closest('.card')) updateCardTitle(input);
+}
+
+// ---------- exports ----------
+function exportJSON(){
+  download(new Blob([JSON.stringify(resume, null, 2)], {type:'application/json'}), safeName() + '-resume.json');
+  toast('JSON exported');
+}
+
+function exportHTML(){
+  var paperClone = $('paper').cloneNode(true);
+  paperClone.style.transform = '';
+  paperClone.removeAttribute('id');
+
+  var html = '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1">' +
+    '<title>' + esc(resume.personal.name || 'Resume') + '</title><style>' +
+    'html,body{margin:0;padding:0;background:#eef1f6}' +
+    'body{display:flex;justify-content:center;padding:24px;font-family:system-ui,sans-serif}' +
+    '@media print{body{background:#fff;padding:0;display:block}}' +
+    paperCSS + '</style></head><body>' + paperClone.outerHTML + '</body></html>';
+
+  download(new Blob([html], {type:'text/html'}), safeName() + '-resume.html');
+  toast('HTML exported');
+}
+
+function exportMarkdown(){
+  var d = resume;
+  var L = [];
+  var p = d.personal;
+
+  L.push('# ' + (p.name || 'Your Name'));
+  if(p.title) L.push('**' + p.title + '**');
+  var contact = [p.email, p.phone, p.location, p.website, p.linkedin, p.github].filter(Boolean).join(' | ');
+  if(contact) L.push(contact);
+  L.push('');
+
+  d.sectionOrder.forEach(function(key){
+    if(d.hidden[key]) return;
+
+    if(key.indexOf('custom:') === 0){
+      var c = d.custom.find(function(x){ return x.id === key.slice(7) });
+      if(!c || (!c.title && !c.content)) return;
+      L.push('## ' + (c.title || 'Section'));
+      L.push(c.content || '');
+      L.push('');
+      return;
+    }
+
+    if(key === 'summary'){
+      if(!(d.summary||'').trim()) return;
+      L.push('## Summary'); L.push(d.summary.trim()); L.push('');
+    } else if(key === 'experience'){
+      if(!d.experience.length) return;
+      L.push('## Work Experience');
+      d.experience.forEach(function(e){
+        var end = e.current ? 'Present' : e.end;
+        L.push('### ' + (e.role || '') + ' — ' + (e.company || ''));
+        var meta = [[e.location], [e.start, end].filter(Boolean).join(' – ')].filter(function(x){ return x && x.length }).join(' · ');
+        if(meta) L.push('*' + meta + '*');
+        toArray(e.bullets).forEach(function(b){ L.push('- ' + b) });
+        L.push('');
+      });
+    } else if(key === 'education'){
+      if(!d.education.length) return;
+      L.push('## Education');
+      d.education.forEach(function(e){
+        L.push('### ' + (e.degree || '') + ' — ' + (e.school || ''));
+        var meta = [[e.location], [e.start, e.end].filter(Boolean).join(' – '), e.gpa].filter(Boolean).join(' · ');
+        if(meta) L.push('*' + meta + '*');
+        if(e.details) L.push(e.details);
+        L.push('');
+      });
+    } else if(key === 'skills'){
+      if(!d.skills.length) return;
+      L.push('## Skills');
+      d.skills.forEach(function(s){ L.push('- **' + (s.category || 'Skills') + ':** ' + toArray(s.items).join(', ')) });
+      L.push('');
+    } else if(key === 'projects'){
+      if(!d.projects.length) return;
+      L.push('## Projects');
+      d.projects.forEach(function(pr){
+        L.push('### ' + (pr.name || ''));
+        var meta = [toArray(pr.tech).join(', '), pr.link].filter(Boolean).join(' · ');
+        if(meta) L.push('*' + meta + '*');
+        if(pr.description) L.push(pr.description);
+        L.push('');
+      });
+    } else if(key === 'certifications'){
+      if(!d.certifications.length) return;
+      L.push('## Certifications');
+      d.certifications.forEach(function(c){ L.push('- ' + c.name + (c.issuer ? ' — ' + c.issuer : '') + (c.date ? ' (' + c.date + ')' : '')) });
+      L.push('');
+    } else if(key === 'awards'){
+      if(!d.awards.length) return;
+      L.push('## Awards');
+      d.awards.forEach(function(a){ L.push('- ' + a.name + (a.issuer ? ' — ' + a.issuer : '') + (a.date ? ' (' + a.date + ')' : '')) });
+      L.push('');
+    } else if(key === 'languages'){
+      if(!d.languages.length) return;
+      L.push('## Languages');
+      d.languages.forEach(function(l){ L.push('- ' + l.name + (l.level ? ' — ' + l.level : '')) });
+      L.push('');
+    } else if(key === 'volunteer'){
+      if(!d.volunteer.length) return;
+      L.push('## Volunteer Work');
+      d.volunteer.forEach(function(v){
+        L.push('### ' + (v.role || '') + ' — ' + (v.org || ''));
+        var meta = [v.start, v.end].filter(Boolean).join(' – ');
+        if(meta) L.push('*' + meta + '*');
+        if(v.description) L.push(v.description);
+        L.push('');
+      });
+    }
+  });
+
+  download(new Blob([L.join('\n')], {type:'text/markdown'}), safeName() + '-resume.md');
+  toast('Markdown exported');
+}
+
+// ---------- Word .doc export ----------
+function exportDoc(){
+  var inner = $('paper').innerHTML;
+  var dims = pageDims();
+  var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">' +
+    '<head><meta charset="utf-8"><title>' + esc(resume.personal.name || 'Resume') + '</title><style>' +
+    '@page{size:' + dims[0] + 'mm ' + dims[1] + 'mm;margin:14mm}' +
+    'body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#374151;margin:0}' +
+    'h1{font-size:24pt;margin:0 0 4pt;color:#111827}' +
+    'h2{font-size:12pt;text-transform:uppercase;letter-spacing:.05em;color:#1d4ed8;border-bottom:1px solid #d1d5db;padding-bottom:2pt;margin:14pt 0 6pt}' +
+    '.item-head{display:flex;justify-content:space-between}' +
+    '.item-title{font-weight:bold;color:#111827}.item-date{font-size:9pt;color:#6b7280}' +
+    '.item-sub{color:#2563eb;font-weight:600;font-size:10pt}' +
+    'ul{margin:4pt 0 0 0;padding-left:16pt}li{margin-bottom:2pt}a{color:#2563eb}' +
+    '</style></head><body>' + inner + '</body></html>';
+
+  download(new Blob(['\ufeff', html], {type:'application/msword'}), safeName() + '-resume.doc');
+  toast('Word (.doc) exported');
+}
+
+// ---------- Word .docx export (loads the docx library) ----------
+function loadScript(src){
+  return new Promise(function(resolve){
+    var s = document.createElement('script');
+    s.src = src;
+    s.onload = function(){ resolve(true) };
+    s.onerror = function(){ resolve(false) };
+    document.head.appendChild(s);
+    setTimeout(function(){ resolve(!!window.docx) }, 7000);
+  });
+}
+
+var docxLoading = null;
+
+function ensureDocx(){
+  if(window.docx) return Promise.resolve(true);
+  if(docxLoading) return docxLoading;
+  docxLoading = loadScript('https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js');
+  return docxLoading;
+}
+
+async function exportDocx(){
+  var ok = await ensureDocx();
+  if(!ok || !window.docx){ exportDoc(); return; }
+
+  try {
+    var docx = window.docx;
+    var d = resume, p = d.personal;
+    var kids = [];
+    var headColor = (d.design.sectionTitleColor || '#1d4ed8').replace('#','').toUpperCase();
+
+    kids.push(new docx.Paragraph({
+      alignment: docx.AlignmentType.CENTER,
+      spacing:{after:60},
+      children:[new docx.TextRun({text:p.name || 'Your Name', bold:true, size:44, color:'111827'})]
+    }));
+
+    if(p.title){
+      kids.push(new docx.Paragraph({
+        alignment: docx.AlignmentType.CENTER,
+        spacing:{after:60},
+        children:[new docx.TextRun({text:p.title, size:24, color:'2563EB'})]
+      }));
+    }
+
+    var line = [p.email, p.phone, p.location, p.website, p.linkedin, p.github].filter(Boolean).join('  •  ');
+    if(line){
+      kids.push(new docx.Paragraph({
+        alignment: docx.AlignmentType.CENTER,
+        spacing:{after:200},
+        children:[new docx.TextRun({text:line, size:18, color:'555555'})]
+      }));
+    }
+
+    function H(text){
+      return new docx.Paragraph({
+        spacing:{before:260, after:100},
+        border:{bottom:{color:'D1D5DB', size:6, style:'single', space:2}},
+        children:[new docx.TextRun({text:String(text).toUpperCase(), bold:true, size:24, color:headColor})]
+      });
+    }
+    function P(text, opts){
+      return new docx.Paragraph({
+        spacing:{after:40},
+        children:[new docx.TextRun(Object.assign({text:String(text||'')}, opts||{}))]
+      });
+    }
+    function B(text){
+      return new docx.Paragraph({text:String(text), bullet:{level:0}, spacing:{after:30}});
+    }
+
+    d.sectionOrder.forEach(function(key){
+      if(d.hidden[key]) return;
+
+      if(key.indexOf('custom:') === 0){
+        var c = d.custom.find(function(x){ return x.id === key.slice(7) });
+        if(!c || (!c.title && !c.content)) return;
+        kids.push(H(c.title || 'Section'));
+        String(c.content || '').split('\n').forEach(function(ln){
+          if(ln.trim()) kids.push(P(ln.trim()));
+        });
+        return;
+      }
+
+      if(key === 'summary'){
+        if(!(d.summary||'').trim()) return;
+        kids.push(H('Summary'));
+        d.summary.split('\n').forEach(function(l){ if(l.trim()) kids.push(P(l.trim())) });
+      } else if(key === 'experience'){
+        if(!d.experience.length) return;
+        kids.push(H('Work Experience'));
+        d.experience.forEach(function(e){
+          var end = e.current ? 'Present' : e.end;
+          var date = [e.start, end].filter(Boolean).join(' – ');
+          kids.push(new docx.Paragraph({
+            spacing:{before:120, after:0},
+            children:[
+              new docx.TextRun({text:e.role || '', bold:true, size:22}),
+              new docx.TextRun({text: date ? '   ' + date : '', size:17, color:'6B7280'})
+            ]
+          }));
+          var sub = [e.company, e.location].filter(Boolean).join(' · ');
+          if(sub) kids.push(P(sub, {italics:true, size:19, color:'2563EB'}));
+          toArray(e.bullets).forEach(function(b){ kids.push(B(b)) });
+        });
+      } else if(key === 'education'){
+        if(!d.education.length) return;
+        kids.push(H('Education'));
+        d.education.forEach(function(e){
+          var date = [e.start, e.end].filter(Boolean).join(' – ');
+          kids.push(new docx.Paragraph({
+            spacing:{before:120, after:0},
+            children:[
+              new docx.TextRun({text:e.degree || '', bold:true, size:22}),
+              new docx.TextRun({text: date ? '   ' + date : '', size:17, color:'6B7280'})
+            ]
+          }));
+          var sub = [e.school, e.location].filter(Boolean).join(' · ');
+          if(sub) kids.push(P(sub, {italics:true, size:19, color:'2563EB'}));
+          if(e.gpa) kids.push(P(e.gpa, {size:19}));
+          if(e.details) kids.push(P(e.details, {size:19}));
+        });
+      } else if(key === 'skills'){
+        if(!d.skills.length) return;
+        kids.push(H('Skills'));
+        d.skills.forEach(function(s){
+          kids.push(new docx.Paragraph({
+            spacing:{after:40},
+            children:[
+              new docx.TextRun({text:(s.category ? s.category + ': ' : ''), bold:true}),
+              new docx.TextRun({text: toArray(s.items).join(', ')})
+            ]
+          }));
+        });
+      } else if(key === 'projects'){
+        if(!d.projects.length) return;
+        kids.push(H('Projects'));
+        d.projects.forEach(function(pr){
+          var tech = toArray(pr.tech);
+          kids.push(new docx.Paragraph({
+            spacing:{before:120, after:0},
+            children:[
+              new docx.TextRun({text:pr.name || '', bold:true, size:22}),
+              new docx.TextRun({text: pr.link ? '   ' + pr.link : '', size:17, color:'2563EB'})
+            ]
+          }));
+          if(tech.length) kids.push(P(tech.join(' · '), {italics:true, size:19, color:'2563EB'}));
+          if(pr.description) kids.push(P(pr.description, {size:19}));
+        });
+      } else if(key === 'certifications'){
+        if(!d.certifications.length) return;
+        kids.push(H('Certifications'));
+        d.certifications.forEach(function(c){ kids.push(B([c.name, c.issuer, c.date].filter(Boolean).join(' — '))) });
+      } else if(key === 'awards'){
+        if(!d.awards.length) return;
+        kids.push(H('Awards'));
+        d.awards.forEach(function(a){ kids.push(B([a.name, a.issuer, a.date].filter(Boolean).join(' — '))) });
+      } else if(key === 'languages'){
+        if(!d.languages.length) return;
+        kids.push(H('Languages'));
+        kids.push(P(d.languages.map(function(l){ return l.name + (l.level ? ' (' + l.level + ')' : '') }).join(', ')));
+      } else if(key === 'volunteer'){
+        if(!d.volunteer.length) return;
+        kids.push(H('Volunteer Work'));
+        d.volunteer.forEach(function(v){
+          var date = [v.start, v.end].filter(Boolean).join(' – ');
+          kids.push(new docx.Paragraph({
+            spacing:{before:120, after:0},
+            children:[
+              new docx.TextRun({text:v.role || '', bold:true, size:22}),
+              new docx.TextRun({text: date ? '   ' + date : '', size:17, color:'6B7280'})
+            ]
+          }));
+          if(v.org) kids.push(P(v.org, {italics:true, size:19, color:'2563EB'}));
+          if(v.description) kids.push(P(v.description, {size:19}));
+        });
+      }
+    });
+
+    var dims = pageDims();
+    var doc = new docx.Document({
+      sections:[{
+        properties:{
+          page:{
+            size:{width:Math.round(dims[0]*56.6929), height:Math.round(dims[1]*56.6929)},
+            margin:{top:794, right:794, bottom:794, left:794}
+          }
+        },
+        children: kids
+      }]
+    });
+
+    var blob = await docx.Packer.toBlob(doc);
+    download(blob, safeName() + '-resume.docx');
+    toast('DOCX exported');
+  } catch(err){
+    console.error(err);
+    exportDoc();
+  }
+}
+
+function exportPDF(){
+  toast('Choose "Save as PDF" in the print dialog');
+  setTimeout(function(){ window.print() }, 350);
+}
+
+// ---------- tabs (Content / Design / Advanced) ----------
+document.querySelectorAll('.tab').forEach(function(tab){
+  tab.onclick = function(){
+    document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active') });
+    document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active') });
+    tab.classList.add('active');
+    $(tab.dataset.tab + 'Panel').classList.add('active');
+    if(tab.dataset.tab === 'advanced'){
+      $('jsonArea').value = JSON.stringify(resume, null, 2);
+    }
+    setTimeout(fitPreview, 30);
+  };
+});
+
+// ---------- editor inputs ----------
+$('editor').addEventListener('input', handleInput);
+$('editor').addEventListener('change', handleInput);
+
+// ---------- button clicks inside the content panel ----------
+$('contentPanel').addEventListener('click', function(e){
+  var btn = e.target.closest('[data-action]');
+
+  // photo upload / clear first (no data-action)
+  if(e.target.closest('#photoUpload')){ $('photoInput').click(); return; }
+  if(e.target.closest('#photoClear')){ resume.personal.photo = ''; drawEditor(); updatePreview(); saveSoon(); return; }
+
+  if(!btn) return;
+  var action = btn.dataset.action;
+
+  if(action === 'add'){
+    var section = btn.dataset.section;
+    var item = {};
+    listInfo[section].fields.forEach(function(f){
+      item[f.key] = (f.type === 'lines' || f.type === 'csv') ? [] : (f.type === 'checkbox' ? false : '');
+    });
+    resume[section].push(item);
+    drawEditor(); updatePreview(); saveSoon();
+  } else if(action === 'del'){
+    resume[btn.dataset.section].splice(+btn.dataset.index, 1);
+    drawEditor(); updatePreview(); saveSoon();
+  } else if(action === 'up' || action === 'down'){
+    var arr = resume[btn.dataset.section];
+    var i = +btn.dataset.index;
+    var j = action === 'up' ? i - 1 : i + 1;
+    if(j < 0 || j >= arr.length) return;
+    var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+    drawEditor(); updatePreview(); saveSoon();
+  } else if(action === 'move'){
+    var key = btn.dataset.key;
+    var dir = +btn.dataset.dir;
+    var order = resume.sectionOrder;
+    var a = order.indexOf(key);
+    var b = a + dir;
+    if(a < 0 || b < 0 || b >= order.length) return;
+    var t = order[a]; order[a] = order[b]; order[b] = t;
+    drawEditor(); updatePreview(); saveSoon();
+  } else if(action === 'toggle'){
+    var k = btn.dataset.key;
+    resume.hidden[k] = !resume.hidden[k];
+    drawEditor(); updatePreview(); saveSoon();
+  } else if(action === 'addcustom'){
+    var id = 'c' + Date.now().toString(36);
+    resume.custom.push({id:id, title:'New Section', content:''});
+    resume.sectionOrder.push('custom:' + id);
+    drawEditor(); updatePreview(); saveSoon();
+  } else if(action === 'delcustom'){
+    var did = btn.dataset.id;
+    resume.custom = resume.custom.filter(function(c){ return c.id !== did });
+    resume.sectionOrder = resume.sectionOrder.filter(function(k){ return k !== 'custom:' + did });
+    drawEditor(); updatePreview(); saveSoon();
+  }
+});
+
+// ---------- photo upload ----------
+$('contentPanel').addEventListener('change', function(e){
+  if(e.target.id !== 'photoInput') return;
+  var file = e.target.files && e.target.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev){
+    resume.personal.photo = ev.target.result;
+    drawEditor(); updatePreview(); saveSoon();
+    toast('Photo added');
+  };
+  reader.readAsDataURL(file);
+});
+
+// ---------- top bar buttons ----------
+$('saveBtn').onclick = function(){ saveNow(); toast('Saved to this browser') };
+
+$('loadBtn').onclick = function(){
+  var data = loadSaved();
+  if(!data){ toast('Nothing saved yet'); return; }
+  resume = data;
+  syncInputs($('designPanel'));
+  drawEditor(); updatePreview();
+  toast('Resume loaded');
+};
+
+$('sampleBtn').onclick = function(){
+  if(!confirm('Load the sample resume? Your current content will be replaced.')) return;
+  resume = fixResume(clone(sampleResume));
+  syncInputs($('designPanel'));
+  drawEditor(); updatePreview(); saveNow();
+  toast('Sample resume loaded');
+};
+
+$('importBtn').onclick = function(){ $('fileInput').click() };
+
+$('fileInput').onchange = function(e){
+  var file = e.target.files && e.target.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev){
+    try {
+      resume = fixResume(JSON.parse(ev.target.result));
+      syncInputs($('designPanel'));
+      drawEditor(); updatePreview(); saveNow();
+      toast('Imported ' + file.name);
+    } catch(err){ alert('That file is not valid resume JSON.') }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+};
+
+$('jsonBtn').onclick = exportJSON;
+$('htmlBtn').onclick = exportHTML;
+$('docxBtn').onclick = exportDocx;
+$('mdBtn').onclick = exportMarkdown;
+$('pdfBtn').onclick = exportPDF;
+$('printBtn').onclick = function(){ window.print() };
+
+// ---------- advanced panel buttons ----------
+$('copyJson').onclick = async function(){
+  var text = JSON.stringify(resume, null, 2);
+  try { await navigator.clipboard.writeText(text); toast('JSON copied') }
+  catch(e){ $('jsonArea').value = text; toast('Copy failed — put in text area') }
+};
+
+$('pasteJson').onclick = async function(){
+  try { $('jsonArea').value = await navigator.clipboard.readText(); toast('Pasted — now press Apply') }
+  catch(e){ toast('Clipboard not allowed') }
+};
+
+$('applyJson').onclick = function(){
+  try {
+    resume = fixResume(JSON.parse($('jsonArea').value));
+    syncInputs($('designPanel'));
+    drawEditor(); updatePreview(); saveNow();
+    toast('JSON applied');
+  } catch(err){ alert('Invalid JSON: ' + err.message) }
+};
+
+$('blankBtn').onclick = function(){
+  if(!confirm('Start a blank resume? Your current content will be cleared.')) return;
+  resume = fixResume(blankResume());
+  syncInputs($('designPanel'));
+  drawEditor(); updatePreview(); saveNow();
+  toast('Blank resume ready');
+};
+
+$('resetDesign').onclick = function(){
+  resume.design = Object.assign({}, defaultDesign);
+  syncInputs($('designPanel'));
+  updatePreview(); saveNow();
+  toast('Design reset');
+};
+
+// ---------- dark mode toggle ----------
+var darkBtn = $('darkBtn');
+var isDark = localStorage.getItem('resumeDark') === 'yes';
+
+if(isDark) document.body.classList.add('dark');
+darkBtn.textContent = isDark ? '☀️' : '🌙';
+
+darkBtn.onclick = function(){
+  isDark = !isDark;
+  document.body.classList.toggle('dark', isDark);
+  localStorage.setItem('resumeDark', isDark ? 'yes' : 'no');
+  darkBtn.textContent = isDark ? '☀️' : '🌙';
+};
+
+// ---------- mobile edit / preview tabs ----------
+$('showEdit').onclick = function(){
+  $('app').classList.remove('show-preview');
+  $('app').classList.add('show-edit');
+  $('showEdit').classList.add('on');
+  $('showPreview').classList.remove('on');
+  setTimeout(fitPreview, 60);
+};
+
+$('showPreview').onclick = function(){
+  $('app').classList.remove('show-edit');
+  $('app').classList.add('show-preview');
+  $('showPreview').classList.add('on');
+  $('showEdit').classList.remove('on');
+  setTimeout(fitPreview, 60);
+};
+
+// ---------- init ----------
+function start(){
+  document.getElementById('paperStyles').textContent = paperCSS;
+
+  var saved = loadSaved();
+  resume = saved || fixResume(clone(sampleResume));
+
+  syncInputs($('designPanel'));
+  drawEditor();
+  updatePreview();
+
+  window.addEventListener('resize', fitPreview);
+  window.addEventListener('beforeprint', function(){
+    $('paper').style.transform = 'none';
+    $('scaler').style.width = 'auto';
+    $('scaler').style.height = 'auto';
+  });
+  window.addEventListener('afterprint', fitPreview);
+
+  setTimeout(fitPreview, 120);
+  setTimeout(fitPreview, 500);
+
+  if(!saved){
+    setTimeout(function(){ toast('Sample resume loaded — start editing on the left') }, 700);
+  }
+}
+
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', start);
+} else {
+  start();
+}
+
+})();
+</script>
+</body>
+</html>
